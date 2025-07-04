@@ -124,8 +124,12 @@ const app = express();
 const dbConnection = require("./config/database");
 const user = require("./models/user"); // model
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 const { validateSignUpData } = require("./utils/validation");
+const {userAuth}=require("./middlewares/authMiddleware")
 app.use(express.json());
+app.use(cookieParser());
 // console.log(validateSignUpData,"1234")
 // GET user by email — using query params instead of body (GET should not have a body)
 app.get("/user", async (req, res) => {
@@ -134,7 +138,7 @@ app.get("/user", async (req, res) => {
     // if (!eMailId) {
     //   return res.status(400).send("Email is required");
     // }
-    const Users = await user.findOne({ });
+    const Users = await user.findOne({});
 
     // Check if user exists
     if (!Users) {
@@ -175,29 +179,39 @@ app.post("/user", async (req, res) => {
   }
 });
 
-app.post("/login",async(req,res)=>{
-  const{email,password}=req.body;
-  const validUser=await user.findOne({email})
-  if(!validUser){
-     throw new Error("Invalid credentials !")
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  const validUser = await user.findOne({ email });
+  if (!validUser) {
+    throw new Error("Invalid credentials !");
   }
-const isPasswordValid= await bcrypt.compare(password,validUser.password)
-if(!isPasswordValid){
-  //jwt token logic 
-  //create the jwt token 
-  //add token into cookie send the response back to user 
-  
+  const isPasswordValid = await bcrypt.compare(password, validUser.password);
+  console.log(isPasswordValid)
+  if (isPasswordValid) {
+    //jwt token logic
+    //create the jwt token
+    //add token into cookie send the response back to user
+    const token = jwt.sign({ _id: validUser._id }, "Naresh@DevTinder");
+    // console.log(token);
+    res.cookie("token", token);
 
+    res.status(200).send("login Successful !");
+  } else {
+    throw new Error("Invalid credentials !");
+  }
+});
 
-
-
-
-  res.status(200).send("login Successful !")
-}else{
-     throw new Error("Invalid credentials !")
-}
-
-})
+//get/profile ;
+app.get("/profile",userAuth, async (req, res) => {
+  try {
+    res
+      .status(200)
+      .json({ message: "This is the Profile Page!", user: req.user });
+  } catch (error) {
+    console.error("Error in /profile route:", error.message);
+    res.status(403).json({ error: "Invalid or expired token." });
+  }
+});
 // DELETE user by ID from body
 app.delete("/user", async (req, res) => {
   try {

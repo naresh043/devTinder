@@ -193,7 +193,7 @@ app.post("/login", async (req, res) => {
     //add token into cookie send the response back to user
     const token = jwt.sign({ _id: validUser._id }, "Naresh@DevTinder");
     // console.log(token);
-    res.cookie("token", token);
+    res.cookie("token", token,{expires: new Date(Date.now() + 60 * 1000)});
 
     res.status(200).send("login Successful !");
   } else {
@@ -276,6 +276,7 @@ app.patch("/user/:userId", async (req, res) => {
     res.status(500).send("Error updating user: " + err.message);
   }
 });
+
 
 // Connect to DB and start server
 dbConnection()

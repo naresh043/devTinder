@@ -1,35 +1,34 @@
 const jwt = require("jsonwebtoken");
-const user = require("../models/user"); // Adjust path as needed
-
+const users = require("../models/user");
 const userAuth = async (req, res, next) => {
   try {
-    // Read the token from cookies
+    //getting the cookies from request read the cookies
+    //valadating the jwt token
+    //find the user through the decodedToken id 
     const cookie = req.cookies;
     if (!cookie || !cookie.token) {
-      return res.status(401).json({ error: "Authentication token missing." });
+      throw new Error("we are not getting the Cookie");
     }
-
-    // Verify the token (throws error if invalid/expired)
-    const decodedToken = jwt.verify(cookie.token, "Naresh@DevTinder");
-    const { _id } = decodedToken;
-
-    // Find the user by ID
-    const loggedUser = await user.findById(_id);
-    if (!loggedUser) {
-      return res.status(404).json({ error: "User not found." });
+    console.log(cookie);
+    const decodedToken = await jwt.verify(cookie.token, "Naresh@DevTinder");
+    console.log(decodedToken);
+    
+    if (!decodedToken) {
+      throw new Error("Token Validation Failed !");
     }
-    console.log(loggedUser)
-    // Attach user to request object
-    req.user = loggedUser;
-
-    // Proceed to the next middleware
+    const _id = decodedToken._id;
+    const user = await users.findById(_id);
+    if (!user) {
+      throw new Error("User not found !");
+    }
+    req.user = user;
+    //   console.log(user);
     next();
   } catch (err) {
-    console.error("JWT Auth Error:", err.message);
-    return res.status(403).json({ error: "Invalid or expired token." });
+    console.error("Error in Jwt" + err.message+err.expiredAt);
+    res.status(500).send("Token  expires or Or invalid Token " + err.message+err.expiredAt);
   }
 };
-
 
 module.exports = {
   userAuth,

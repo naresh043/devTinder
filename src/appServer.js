@@ -127,7 +127,8 @@ const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const { validateSignUpData } = require("./utils/validation");
-const {userAuth}=require("./middlewares/authMiddleware")
+const { userAuth } = require("./middlewares/authMiddleware");
+const User = require("./models/user");
 app.use(express.json());
 app.use(cookieParser());
 // console.log(validateSignUpData,"1234")
@@ -185,16 +186,13 @@ app.post("/login", async (req, res) => {
   if (!validUser) {
     throw new Error("Invalid credentials !");
   }
-  const isPasswordValid = await bcrypt.compare(password, validUser.password);
-  console.log(isPasswordValid)
+  const isPasswordValid = await validUser.validatePassword(password);
   if (isPasswordValid) {
     //jwt token logic
     //create the jwt token
     //add token into cookie send the response back to user
-    const token = jwt.sign({ _id: validUser._id }, "Naresh@DevTinder");
-    // console.log(token);
-    res.cookie("token", token,{expires: new Date(Date.now() + 60 * 1000)});
-
+    const token = await validUser.getJWT();
+    res.cookie("token", token);
     res.status(200).send("login Successful !");
   } else {
     throw new Error("Invalid credentials !");
@@ -202,7 +200,7 @@ app.post("/login", async (req, res) => {
 });
 
 //get/profile ;
-app.get("/profile",userAuth, async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
     res
       .status(200)
@@ -210,6 +208,20 @@ app.get("/profile",userAuth, async (req, res) => {
   } catch (error) {
     console.error("Error in /profile route:", error.message);
     res.status(403).json({ error: "Invalid or expired token." });
+  }
+});
+//sendConnectonRequest Api
+app.post("/sendConnectionRequest", userAuth, (req, res) => {
+  try {
+    const user = req.user;
+    console.log(user);
+    if (!user) {
+      throw new Error("user Not Fround");
+    }
+    res.status(200).send("send request successful !!!");
+  } catch (err) {
+    console.error("Error in send connection Request !" + err.message);
+    res.status(500).send("Error in sending connection request !");
   }
 });
 // DELETE user by ID from body
@@ -276,7 +288,6 @@ app.patch("/user/:userId", async (req, res) => {
     res.status(500).send("Error updating user: " + err.message);
   }
 });
-
 
 // Connect to DB and start server
 dbConnection()

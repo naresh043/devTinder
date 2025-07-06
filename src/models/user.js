@@ -61,7 +61,7 @@ const userSchema = new mongoose.Schema(
 );
 userSchema.methods.getJWT = async function () {
   try {
-    const token = await jwt.sign( { _id: this._id }, "Naresh@DevTinder",{expiresIn:"1m"});
+    const token = await jwt.sign( { _id: this._id }, "Naresh@DevTinder");
     // console.log(token);
     if (!token) {
       throw new Error("error in generating the jwt Token !");

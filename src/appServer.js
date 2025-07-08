@@ -6,14 +6,15 @@ const cookieParser = require("cookie-parser");
 app.use(express.json());
 app.use(cookieParser());
 
-const {authRouter} = require("./routers/auth");
-const {profileRouter} = require("./routers/profile");
-const {requestRouter} = require("./routers/request");
+const { authRouter } = require("./routers/auth");
+const { profileRouter } = require("./routers/profile");
+const { requestRouter } = require("./routers/request");
+const { userRouter } = require("./routers/user");
 
-app.use('/',authRouter)
-app.use('/',profileRouter)
-app.use('/',requestRouter)
-
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
+app.use("/", userRouter);
 
 // // DELETE user by ID from body
 // app.delete("/user", async (req, res) => {
@@ -87,4 +88,3 @@ dbConnection()
     app.listen(3000, () => console.log("Server is running on port 3000"));
   })
   .catch((err) => console.log("Database connection failed:", err));
- 

@@ -50,12 +50,6 @@ requestRouter.post(
           },
         ],
       });
-
-      console.log(
-        existedConnectionRequest,
-        "loggggggggggggggggggggggggggggggggggggggg"
-      );
-
       if (existedConnectionRequest) {
         return res
           .status(409)
@@ -70,12 +64,45 @@ requestRouter.post(
 
       const data = await connectionRequest.save();
       res.status(200).json({
-        message: `${req.user.firstName} sent ${status.toUpperCase()} request to ${toUser.firstName}`,
+        message: `${
+          req.user.firstName
+        } sent ${status.toUpperCase()} request to ${toUser.firstName}`,
         data: data,
       });
     } catch (err) {
       console.error("Error:" + err.message);
       res.status(400).json({ message: err.message });
+    }
+  }
+);
+requestRouter.post(
+  "/request/review/:status/:requestedId",
+  userAuth,
+  async (req, res) => {
+    try {
+      const loggedInUser = req.user;
+      const { status, requestedId } = req.params;
+      const isAllowedStatus = ["accepted", "rejected"];
+      if (!isAllowedStatus.includes(status)) {
+        return res.status(400).json({
+          message: "status Not Allowed ",
+        });
+      }
+      const connectionRequest = await connectionRequestModel.findOne({
+        _id: requestedId,
+        toUserId: loggedInUser._id,
+        status: "interested",
+      });
+      if (!connectionRequest) {
+        return res
+          .status(404)
+          .json({ message: "Connection request not found " });
+      }
+      connectionRequest.status = status;
+      const data = await connectionRequest.save();
+      res.json({ message: "connection request " + status, data });
+    } catch (err) {
+      res.status(400).json({ message: "Error :" + err.message });
     }
   }
 );

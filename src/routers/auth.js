@@ -1,16 +1,16 @@
 const bcrypt = require("bcrypt");
 const user = require("../models/user");
-const {validateSignUpData}=require("../utils/validation")
+const { validateSignUpData } = require("../utils/validation");
 const express = require("express");
-const authRouter = express.Router()
+const authRouter = express.Router();
 
 // POST (create) new user
-authRouter.post("/user", async (req, res) => {
+authRouter.post("/signup", async (req, res) => {
   try {
     validateSignUpData(req.body);
     const { firstName, lastName, email, password } = req.body;
     const passwordHash = await bcrypt.hash(password, 10);
-    console.log(passwordHash);
+    // console.log(passwordHash);
 
     const newUser = new user({
       firstName,
@@ -49,6 +49,10 @@ authRouter.post("/login", async (req, res) => {
     throw new Error("Invalid credentials !");
   }
 });
+authRouter.post("/logout", async (req, res) => {
+  res.cookie("token", null, { expires: new Date(Date.now()) });
+  res.status(200).send("Logout Successful !");
+});
 
 // GET user by email — using query params instead of body (GET should not have a body)
 // app.get("/user", async (req, res) => {
@@ -71,6 +75,6 @@ authRouter.post("/login", async (req, res) => {
 //   }
 // });
 
-module.exports={
-    authRouter
-}
+module.exports = {
+  authRouter,
+};

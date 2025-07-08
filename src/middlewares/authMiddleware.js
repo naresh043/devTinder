@@ -9,9 +9,9 @@ const userAuth = async (req, res, next) => {
     if (!cookie || !cookie.token) {
       throw new Error("we are not getting the Cookie");
     }
-    console.log(cookie);
+    // console.log(cookie);
     const decodedToken = await jwt.verify(cookie.token, "Naresh@DevTinder");
-    console.log(decodedToken);
+    // console.log(decodedToken);
     
     if (!decodedToken) {
       throw new Error("Token Validation Failed !");

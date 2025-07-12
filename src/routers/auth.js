@@ -35,7 +35,10 @@ authRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
   const validUser = await user.findOne({ email });
   if (!validUser) {
-    throw new Error("Invalid credentials !");
+    return res.status(500).json({
+      success: false,
+      message: "Invalid credentials !",
+    });
   }
   const isPasswordValid = await validUser.validatePassword(password);
   if (isPasswordValid) {
@@ -44,9 +47,18 @@ authRouter.post("/login", async (req, res) => {
     //add token into cookie send the response back to user
     const token = await validUser.getJWT();
     res.cookie("token", token);
-    res.status(200).send(validUser);
+    res.status(200).json({
+      success: true,
+      message: "Login successful!",
+      data: {
+        user: validUser,
+      },
+    });
   } else {
-    throw new Error("Invalid credentials !");
+    return res.status(500).json({
+      success: false,
+      message: "Invalid credentials !",
+    });
   }
 });
 authRouter.post("/logout", async (req, res) => {

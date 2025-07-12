@@ -4,15 +4,18 @@ const userAuth = async (req, res, next) => {
   try {
     //getting the cookies from request read the cookies
     //valadating the jwt token
-    //find the user through the decodedToken id 
+    //find the user through the decodedToken id
     const cookie = req.cookies;
     if (!cookie || !cookie.token) {
-      throw new Error("we are not getting the Cookie");
+      return res.status(401).json({
+        success: false,
+        message: "Please login to continue.",
+      });
     }
     // console.log(cookie);
     const decodedToken = await jwt.verify(cookie.token, "Naresh@DevTinder");
     // console.log(decodedToken);
-    
+
     if (!decodedToken) {
       throw new Error("Token Validation Failed !");
     }
@@ -25,8 +28,12 @@ const userAuth = async (req, res, next) => {
     //   console.log(user);
     next();
   } catch (err) {
-    console.error("Error in Jwt" + err.message+err.expiredAt);
-    res.status(500).send("Token  expires or Or invalid Token " + err.message+err.expiredAt);
+    console.error("Error in Jwt" + err.message);
+    res
+      .status(500)
+      .send(
+        "Token  expires or Or invalid Token " + err.message + err.expiredAt
+      );
   }
 };
 

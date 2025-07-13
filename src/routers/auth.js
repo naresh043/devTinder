@@ -8,7 +8,16 @@ const authRouter = express.Router();
 authRouter.post("/signup", async (req, res) => {
   try {
     validateSignUpData(req.body);
-    const { firstName, lastName, email, password } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      age,
+      gender,
+      photoURL,
+      skills,
+    } = req.body;
     const passwordHash = await bcrypt.hash(password, 10);
     // console.log(passwordHash);
 
@@ -16,6 +25,10 @@ authRouter.post("/signup", async (req, res) => {
       firstName,
       lastName,
       email,
+      age,
+      gender,
+      photoURL,
+      skills,
       password: passwordHash,
     });
     const UserSaved = await newUser.save();

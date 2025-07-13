@@ -23,16 +23,20 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
   try {
     // Validate the incoming data
     if (!validateProfileEditData(req)) {
-      throw new Error("Edit Not Allowed");
-      return res.status(400).json({ message: "Edit not allowed!" });
+      return res.status(400).json({
+        success: false,
+        message: "Edit not allowed!",
+      });
     }
 
     // Get the logged-in user (make sure middleware sets req.user)
     const loggedInUser = req.user;
     // console.log(loggedInUser);
     if (!loggedInUser) {
-      throw new Error("Unauthorized user!");
-      return res.status(401).json({ message: "Unauthorized user!" });
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized user!",
+      });
     }
 
     // Update only the fields provided in the request body
@@ -43,12 +47,21 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
     // Save the updated user data to database
     await loggedInUser.save();
 
-    res.status(200).json({ message: "Profile updated successfully!" });
+    res.status(200).json({
+      success: true,
+      message: "user details edited successful !",
+      data: {
+        user: loggedInUser,
+      },
+    });
   } catch (err) {
-    console.error("Error:", err.message);
-    res
-      .status(500)
-      .json({ message: "Error in editing profile! " + err.message });
+    console.error("Error while editing profile:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Error in editing profile!",
+      error: err.message,
+    });
   }
 });
 profileRouter.patch("/profile/password", userAuth, async (req, res) => {

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
-const bcrypt=require('bcrypt')
+const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema(
   {
@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema(
         }
       },
     },
+    about: {
+      type: String,
+      default:"Empty about section !"
+    },
     photoURL: {
       type: String,
       default:
@@ -61,24 +65,26 @@ const userSchema = new mongoose.Schema(
 );
 userSchema.methods.getJWT = async function () {
   try {
-    const token = await jwt.sign( { _id: this._id }, "Naresh@DevTinder");
+    const token = await jwt.sign({ _id: this._id }, "Naresh@DevTinder");
     // console.log(token);
     if (!token) {
       throw new Error("error in generating the jwt Token !");
     }
-   return token;
+    return token;
   } catch (err) {
-    console.error("Error in the schema methods !"+err.message)
+    console.error("Error in the schema methods !" + err.message);
     // res.status(500).send("Error in th schema methods "+err.message)
   }
 };
-userSchema.methods.validatePassword= async function (passwordInputByUser){
-  const User=this;
-  const hashPassword=User.password;
-  const isPasswordValid=await bcrypt.compare(passwordInputByUser,hashPassword)
+userSchema.methods.validatePassword = async function (passwordInputByUser) {
+  const User = this;
+  const hashPassword = User.password;
+  const isPasswordValid = await bcrypt.compare(
+    passwordInputByUser,
+    hashPassword
+  );
   return isPasswordValid;
-
-}
+};
 
 const User = mongoose.model("User", userSchema);
 module.exports = User;
